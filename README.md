@@ -58,15 +58,15 @@ On first launch, paste your own VPN link:
 Starts sing-box as a local mixed proxy on:
 
 ```text
-127.0.0.1:2080
+127.0.0.1:2081
 ```
 
 Then launches Claude Code with:
 
 ```text
-HTTP_PROXY=http://127.0.0.1:2080
-HTTPS_PROXY=http://127.0.0.1:2080
-ALL_PROXY=socks5://127.0.0.1:2080
+HTTP_PROXY=http://127.0.0.1:2081
+HTTPS_PROXY=http://127.0.0.1:2081
+ALL_PROXY=socks5://127.0.0.1:2081
 ```
 
 Only the Claude process receives those proxy variables.

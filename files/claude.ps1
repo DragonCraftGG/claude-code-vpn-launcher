@@ -27,12 +27,12 @@ if ($code -eq 0 -or $code -eq 2) {
   Import-ClaudeSettingsEnv
 
   if ($code -eq 2) {
-    $env:HTTP_PROXY = "http://127.0.0.1:2080"
-    $env:HTTPS_PROXY = "http://127.0.0.1:2080"
-    $env:ALL_PROXY = "socks5://127.0.0.1:2080"
-    $env:http_proxy = "http://127.0.0.1:2080"
-    $env:https_proxy = "http://127.0.0.1:2080"
-    $env:all_proxy = "socks5://127.0.0.1:2080"
+    $env:HTTP_PROXY = "http://127.0.0.1:2081"
+    $env:HTTPS_PROXY = "http://127.0.0.1:2081"
+    $env:ALL_PROXY = "socks5://127.0.0.1:2081"
+    $env:http_proxy = "http://127.0.0.1:2081"
+    $env:https_proxy = "http://127.0.0.1:2081"
+    $env:all_proxy = "socks5://127.0.0.1:2081"
   } else {
     $env:HTTP_PROXY = $null
     $env:HTTPS_PROXY = $null

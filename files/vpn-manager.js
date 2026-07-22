@@ -2,7 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const net = require('net');
-const { spawn, execSync } = require('child_process');
+const { spawn, execSync, execFileSync } = require('child_process');
 const URL = require('url').URL;
 
 const LAUNCHER_DIR = path.join(os.homedir(), '.claude-launcher');
@@ -10,6 +10,7 @@ const BIN_DIR = path.join(LAUNCHER_DIR, 'bin');
 const SINGBOX_EXE = path.join(BIN_DIR, 'sing-box.exe');
 const CONFIG_FILE = path.join(LAUNCHER_DIR, 'config.json');
 const GENERATED_SINGBOX_CONFIG = path.join(LAUNCHER_DIR, 'singbox_run.json');
+const PROXY_PORT = 2081;
 
 function loadConfig() {
     if (!fs.existsSync(CONFIG_FILE)) {
@@ -218,11 +219,11 @@ function isTcpPortOpen(host, port, timeoutMs = 250) {
     });
 }
 
-async function waitForTcpPort(host, port, timeoutMs = 6000) {
+async function waitForTcpPort(host, port, timeoutMs = 2500) {
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
         if (await isTcpPortOpen(host, port)) return true;
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
     return false;
 }
@@ -242,7 +243,7 @@ function buildSingboxFullConfig(outboundObj) {
                 type: 'mixed',
                 tag: 'mixed-in',
                 listen: '127.0.0.1',
-                listen_port: 2080,
+                listen_port: PROXY_PORT,
                 sniff: true
             }
         ],
@@ -341,21 +342,31 @@ function startVpn(linkStr) {
                 const firstFatal = logBuffer.split('\n').find(l => l.includes('FATAL') || l.includes('ERROR')) || logBuffer;
                 reject(new Error(firstFatal.trim()));
             } else {
-                waitForTcpPort('127.0.0.1', 2080, 6000).then((proxyReady) => {
+                waitForTcpPort('127.0.0.1', PROXY_PORT, 2500).then((proxyReady) => {
                     closeStartupPipes();
                     if (proxyReady) {
                         resolve(true);
                     } else {
                         stopVpn();
-                        reject(new Error('sing-box started, but local proxy 127.0.0.1:2080 did not become ready.'));
+                        reject(new Error(`sing-box started, but local proxy 127.0.0.1:${PROXY_PORT} did not become ready.`));
                     }
                 });
             }
-        }, 1200);
+        }, 500);
     });
 }
 
 function stopVpn() {
+    try {
+        const pid = execFileSync('powershell.exe', [
+            '-NoProfile',
+            '-Command',
+            "(Get-NetTCPConnection -LocalAddress 127.0.0.1 -LocalPort 2080,2081 -ErrorAction SilentlyContinue | Where-Object { $_.OwningProcess -gt 0 } | Select-Object -ExpandProperty OwningProcess -Unique) -join ','"
+        ], { encoding: 'utf8' }).trim();
+        if (pid) {
+            execSync(`powershell -NoProfile -Command "Stop-Process -Id ${pid} -Force -ErrorAction SilentlyContinue"`, { stdio: 'ignore' });
+        }
+    } catch (e) {}
     try {
         execSync('taskkill /F /IM sing-box.exe 2>nul', { stdio: 'ignore' });
     } catch (e) {}

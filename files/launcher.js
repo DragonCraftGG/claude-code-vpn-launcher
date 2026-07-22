@@ -9,7 +9,7 @@ const WHITE = '\x1b[97m';
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
 const CYAN = '\x1b[36m';
-const INNER_WIDTH = 62;
+const INNER_WIDTH = 54;
 
 function clearScreen() {
     process.stdout.write('\x1b[2J\x1b[H');
@@ -155,9 +155,9 @@ function renderMenu(selectedIndex, cfg) {
     const hasConfig = cfg.vpn_link && cfg.vpn_link.length > 0;
     const configStatusStr = hasConfig ? `${GREEN}(Config loaded)${RESET}` : `${RED}(No config yet)${RESET}`;
     const options = [
-        '⚡ [1] Claude + VPN Proxy    ── Only Claude through VPN',
-        '🌐 [2] Claude Direct         ── No VPN',
-        '⚙️ [3] Configure VPN link    ── Paste vless://, ss://, etc.',
+        '⚡ [1] Claude + VPN Proxy',
+        '🌐 [2] Claude Direct',
+        '⚙️ [3] Configure VPN',
         '❌ [4] Exit'
     ];
 
@@ -165,7 +165,7 @@ function renderMenu(selectedIndex, cfg) {
     console.log(makeLine(`  ${BOLD}${TERRACOTTA}✽ Claude Code VPN Launcher${RESET}`));
     console.log(makeSeparator());
     console.log(makeLine(''));
-    console.log(makeLine(`   ${BOLD}Choose connection mode before launch:${RESET}`));
+    console.log(makeLine(`   ${BOLD}Choose connection mode:${RESET}`));
     console.log(makeLine(`   ${GRAY}Status: ${configStatusStr}${RESET}`));
     console.log(makeLine(''));
     options.forEach((opt, idx) => {
@@ -174,7 +174,8 @@ function renderMenu(selectedIndex, cfg) {
     });
     console.log(makeLine(''));
     console.log(makeSeparator());
-    console.log(makeLine(`  ${GRAY}[↑/↓] Select   [Enter] Launch${RESET}     ${TERRACOTTA}with love by DragonCraft ❤️${RESET}`));
+    console.log(makeLine(`  ${GRAY}[↑/↓] Select  [Enter] Launch${RESET}`));
+    console.log(makeLine(`  ${TERRACOTTA}with love by DragonCraft ❤️${RESET}`));
     console.log(makeBottomBorder());
     console.log('');
 }
@@ -229,25 +230,16 @@ function showMenu() {
                 console.log(`${RED}✘ VPN link is not configured. Choose [3] first.${RESET}`);
                 process.exit(1);
             }
-            console.log(`\n${CYAN}⚡ Checking VPN server TCP reachability...${RESET}`);
-            vpnManager.checkVpnReachable(cfg.vpn_link).then((status) => {
-                if (!status.reachable) {
-                    console.log(`${RED}⚠ TCP check failed: ${status.error}${RESET}`);
-                    console.log(`${GRAY}Continuing: only local VPN proxy startup is required.${RESET}`);
-                } else {
-                    console.log(`${GREEN}✔ VPN server is reachable.${RESET}`);
-                }
-                console.log(`${CYAN}⚡ Starting VPN proxy (sing-box)...${RESET}`);
-                vpnManager.startVpn(cfg.vpn_link).then(() => {
-                    console.log(`${GREEN}✔ VPN proxy is active.${RESET}`);
-                    setTimeout(() => {
-                        clearScreen();
-                        process.exit(2);
-                    }, 700);
-                }).catch((err) => {
-                    console.error(`${RED}✘ VPN proxy startup failed: ${err.message}${RESET}`);
-                    process.exit(1);
-                });
+            console.log(`\n${CYAN}⚡ Starting VPN proxy (sing-box)...${RESET}`);
+            vpnManager.startVpn(cfg.vpn_link).then(() => {
+                console.log(`${GREEN}✔ VPN proxy is active.${RESET}`);
+                setTimeout(() => {
+                    clearScreen();
+                    process.exit(2);
+                }, 300);
+            }).catch((err) => {
+                console.error(`${RED}✘ VPN proxy startup failed: ${err.message}${RESET}`);
+                process.exit(1);
             });
         } else if (choice === 1) {
             vpnManager.stopVpn();
