@@ -1,0 +1,8 @@
+.claude-launcher/
+*.bak
+*.bak.*
+singbox_run.json
+config.json
+*.log
+files/bin/sing-box.exe
+*.zip
