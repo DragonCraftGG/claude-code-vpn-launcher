@@ -1,0 +1,8 @@
+#!/bin/sh
+# Claude Code VPN Launcher shim (claude-launcher) for Git Bash / MSYS.
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+script="$basedir/../claude.ps1"
+if command -v cygpath >/dev/null 2>&1; then
+  script=$(cygpath -w "$script")
+fi
+exec powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "$script" "$@"

@@ -6,3 +6,5 @@ config.json
 *.log
 files/bin/sing-box.exe
 *.zip
+singbox.state.json
+sessions/
